@@ -1,0 +1,116 @@
+# ──────────────────────────────────────────────────────────
+# Harmonization task benchmark construction pipeline — global config
+# ──────────────────────────────────────────────────────────
+
+pipeline:
+  name: "harmonization-benchmark-pipeline"
+  version: "1.0.0"
+
+# ── Stage 1: Project analysis ─────────────────────────────
+stage1_project_analysis:
+  file_pairing:
+    # Four-channel weights (A directory, B filename, C API features, D tests)
+    channel_weights: { A: 0.35, B: 0.30, C: 0.25, D: 0.10 }
+    # Levenshtein filename similarity threshold
+    filename_similarity_threshold: 0.7
+    # Path structure alignment score
+    path_alignment_score: 0.8
+    # Minimum common APIs required for API feature matching
+    min_common_apis: 3
+  dependency_analysis:
+    # Harmonization density threshold (Android-specific API calls / total LOC)
+    min_harmonization_density: 0.05
+
+# ── Stage 2: Task mining ──────────────────────────────────
+stage2_task_mining:
+  # Three-channel detection
+  channels:
+    A_api_level:
+      enabled: true
+      confidence: high
+      source: "HomeTran API mapping library"
+    B_structure_level:
+      enabled: true
+      confidence: medium
+      source: "AST pattern matching"
+    C_semantic_level:
+      enabled: true
+      confidence: low
+      source: "LLM-assisted annotation"
+      # LLM annotation config
+      llm:
+        model: "deepseek-v4-pro"
+        max_tokens_per_file: 4096
+        temperature: 0.1
+  # Eight harmonization categories — dimension weights (for scoring)
+  dimension_weights:
+    D1_ui_layout: 1.0
+    D2_component_architecture: 2.5
+    D3_lifecycle: 1.5
+    D4_state_management: 2.0
+    D5_concurrency: 3.5          # Highest weight: Actor message passing is the hardest refactor
+    D6_permission: 1.5
+    D7_file_sandbox: 1.2
+    D8_third_party_lib: 3.0
+  # L1/L2/L3 difficulty level target ratios
+  level_distribution: { L1: 0.30, L2: 0.50, L3: 0.20 }
+  # Refactor-point scoring weights
+  scoring:
+    w1_api_uncertainty: 0.30     # (1 - API mapping confidence)
+    w2_structure_diff: 0.25      # AST difference magnitude
+    w3_cross_file_impact: 0.25  # Cross-file impact scope
+    w4_dimension_weight: 0.20    # Dimension weight
+    min_score_threshold: 0.15    # Minimum score threshold
+  # Aggregation rules
+  aggregation:
+    l1_max_changes_per_file: 3    # L1: single file with ≤3 same-dimension refactor points
+    l2_min_cross_file: 2          # L2: spans at least 2 files
+    l3_min_files: 5               # L3: ≥5 files
+    l3_triggers: ["D5_concurrency", "D8_third_party_lib"]
+    downgrade_d1_only: true       # Pure D1 (UI) downgraded to L1
+
+# ── Stage 3: Task packaging ───────────────────────────────
+stage3_task_packaging:
+  verification:
+    v1_build:
+      enabled: true
+      target_coverage: 1.0       # 100% of tasks have build verification
+    v2_unit_test:
+      enabled: true
+      target_coverage: 0.7       # ≥70% of tasks have unit tests
+      # JUnit → hypium translator config
+      junit_translator:
+        enabled: true
+        fallback: "llm_generate" # Use LLM generation when no tests exist
+    v3_behavior:
+      enabled: true
+      target_coverage: 0.3       # ≥30% of L3 tasks have behavioral-equivalence verification
+
+# ── Stage 4: Quality review ───────────────────────────────
+stage4_quality_review:
+  thresholds:
+    solvability_pass_at_5: 0.1    # pass@5 > 10%
+    clarity_kappa: 0.6            # κ > 0.6
+    verification_validity: 1.0    # 100%
+    difficulty_variance: 0.05     # var > 0.05
+    min_tasks_per_dimension: 3    # ≥3 tasks per dimension
+    golden_quality: 1.0           # golden build/test 100%
+  human_review:
+    sample_rate: 0.2              # 20% sampling
+    l3_forced: true               # L3 forced manual review
+
+# ── HomeTran API mapping library path ─────────────────────
+hometran:
+  mapping_library_path: "./data/hometran_api_mapping.json"
+  # Reserved: auto-discovery of uncovered APIs
+  auto_discovery:
+    enabled: true
+    method: "doc_graph_gnn"       # QRS 2022 method
+    llm_verify: true
+
+# ── Output config ─────────────────────────────────────────
+output:
+  task_dir: "./outputs/tasks"
+  report_dir: "./outputs/reports"
+  format: "json"
+  include_intermediate: true      # Keep intermediate artifacts for debugging

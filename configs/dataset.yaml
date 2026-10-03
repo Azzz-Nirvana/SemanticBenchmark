@@ -1,0 +1,17 @@
+dataset:
+  projects:
+    - name: sample_clock
+      path: ../datasets/Clock
+      type: openharmony_sample
+    
+    - name: sample_todo
+      path: ../datasets/Todo
+      type: openharmony_sample
+    
+    - name: sample_weather
+      path: ../datasets/Weather
+      type: openharmony_sample
+    
+    - name: internal_app_20k
+      path: ../datasets/internal_app
+      type: internal_project

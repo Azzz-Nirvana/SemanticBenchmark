@@ -1,0 +1,67 @@
+pipeline:
+  min_files_per_task: 1
+  max_candidates_per_project: 2000
+  max_generated_tasks_per_project: 200
+  enable_bug_injection: true
+  enable_static_oracle: true
+  enable_build_oracle: true
+  
+candidate_scoring:
+  cross_file_weight: 0.10
+  dependency_weight: 0.10
+  scenario_type_weight: 0.20
+  verifiability_weight: 0.20
+  complexity_weight: 0.20
+  human_readability_weight: 0.20
+  
+candidate_filters:
+  min_score: 0.0
+  min_files: 1
+  
+large_project_filters:
+  min_score: 0.0
+  min_files: 1
+
+task_injection:
+  enabled: true
+  task_types:
+    - auto
+  enable_composition: true
+  max_plans: 2000
+  max_chain_length: 3
+  max_tasks_per_type:
+    ui_modification: 20
+    event_interaction: 20
+    route_navigation: 20
+    state_management: 20
+    permission_privacy: 20
+    data_persistence: 20
+    network_request: 20
+    ability_lifecycle: 20
+    resource_localization: 20
+    performance_optimization: 10
+    compatibility_adaptation: 10
+    test_completion: 10
+    project_config: 10
+    bug_fix: 20
+    security_robustness: 20
+  output_format: json
+
+validation:
+  stages:
+    static: true
+    build: true
+    test: true
+    oracle: true
+    regression: true
+  require_oracle: true
+  enable_dedup: true
+  max_retries: 3
+
+benchmark_filter:
+  min_bug_failures: 1
+  min_gold_passes: 1
+  max_regressions: 0
+  max_duplicates: 0
+  min_difficulty: easy
+  sample_size: 50
